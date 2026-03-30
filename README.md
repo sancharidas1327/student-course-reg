@@ -1,66 +1,101 @@
-# Student Course Registration System
+# vary
 
-Student course registration project built with Node.js, Express, MySQL, and a static frontend.
+[![NPM Version][npm-image]][npm-url]
+[![NPM Downloads][downloads-image]][downloads-url]
+[![Node.js Version][node-version-image]][node-version-url]
+[![Build Status][travis-image]][travis-url]
+[![Test Coverage][coveralls-image]][coveralls-url]
 
-## Project Structure
+Manipulate the HTTP Vary header
 
-```text
-student-course-reg/
-|-- backend/
-|   |-- routes/
-|   |-- db.js
-|   |-- server.js
-|   |-- package.json
-|   `-- .env.example
-|-- database/
-|   `-- schema.sql
-|-- frontend/
-|   `-- index.html
-`-- .gitignore
+## Installation
+
+This is a [Node.js](https://nodejs.org/en/) module available through the
+[npm registry](https://www.npmjs.com/). Installation is done using the
+[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally): 
+
+```sh
+$ npm install vary
 ```
 
-## MySQL Setup
+## API
 
-1. Create the database and tables by running the SQL in `database/schema.sql`.
-2. In `backend/`, copy `.env.example` to `.env`.
-3. Update `.env` with your MySQL username and password.
+<!-- eslint-disable no-unused-vars -->
 
-Example `.env`:
-
-```env
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-DB_NAME=student_course_reg
-PORT=5000
+```js
+var vary = require('vary')
 ```
 
-## Run The App
+### vary(res, field)
 
-```bash
-cd backend
-npm install
-npm start
+Adds the given header `field` to the `Vary` response header of `res`.
+This can be a string of a single field, a string of a valid `Vary`
+header, or an array of multiple fields.
+
+This will append the header if not already listed, otherwise leaves
+it listed in the current location.
+
+<!-- eslint-disable no-undef -->
+
+```js
+// Append "Origin" to the Vary header of the response
+vary(res, 'Origin')
 ```
 
-Then open [http://localhost:5000](http://localhost:5000).
+### vary.append(header, field)
 
-## Git Setup
+Adds the given header `field` to the `Vary` response header string `header`.
+This can be a string of a single field, a string of a valid `Vary` header,
+or an array of multiple fields.
 
-If you want to push this to GitHub:
+This will append the header if not already listed, otherwise leaves
+it listed in the current location. The new header string is returned.
 
-```bash
-git add .
-git commit -m "Set up student course registration project"
-git branch -M main
-git remote add origin <your-github-repo-url>
-git push -u origin main
+<!-- eslint-disable no-undef -->
+
+```js
+// Get header string appending "Origin" to "Accept, User-Agent"
+vary.append('Accept, User-Agent', 'Origin')
 ```
 
-If `origin` already exists, use:
+## Examples
 
-```bash
-git remote set-url origin <your-github-repo-url>
-git push -u origin main
+### Updating the Vary header when content is based on it
+
+```js
+var http = require('http')
+var vary = require('vary')
+
+http.createServer(function onRequest (req, res) {
+  // about to user-agent sniff
+  vary(res, 'User-Agent')
+
+  var ua = req.headers['user-agent'] || ''
+  var isMobile = /mobi|android|touch|mini/i.test(ua)
+
+  // serve site, depending on isMobile
+  res.setHeader('Content-Type', 'text/html')
+  res.end('You are (probably) ' + (isMobile ? '' : 'not ') + 'a mobile user')
+})
 ```
+
+## Testing
+
+```sh
+$ npm test
+```
+
+## License
+
+[MIT](LICENSE)
+
+[npm-image]: https://img.shields.io/npm/v/vary.svg
+[npm-url]: https://npmjs.org/package/vary
+[node-version-image]: https://img.shields.io/node/v/vary.svg
+[node-version-url]: https://nodejs.org/en/download
+[travis-image]: https://img.shields.io/travis/jshttp/vary/master.svg
+[travis-url]: https://travis-ci.org/jshttp/vary
+[coveralls-image]: https://img.shields.io/coveralls/jshttp/vary/master.svg
+[coveralls-url]: https://coveralls.io/r/jshttp/vary
+[downloads-image]: https://img.shields.io/npm/dm/vary.svg
+[downloads-url]: https://npmjs.org/package/vary

@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Course Registration System</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0f; --surface:#111118; --surface2:#1a1a28;
+    --border:#2a2a40; --accent:#7c5cbf; --accent2:#a07ae8;
+    --accent3:#c9a8ff; --text:#e8e8f0; --text2:#9090b0;
+    --danger:#e05c7a; --success:#5ce0a0; --warn:#e0b05c;
+    --glow:rgba(124,92,191,0.15);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 20%,rgba(124,92,191,.08) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(160,122,232,.06) 0%,transparent 60%);pointer-events:none;z-index:0}
+
+  /* HEADER */
+  header{position:sticky;top:0;z-index:100;background:rgba(10,10,15,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .logo-text{font-size:1.1rem;font-weight:700;letter-spacing:-.5px}
+  .logo-text span{color:var(--accent3)}
+  .header-info{font-size:.75rem;color:var(--text2);font-family:'JetBrains Mono',monospace;display:flex;gap:1.5rem}
+  .header-info strong{color:var(--accent3)}
+
+  /* LAYOUT */
+  .layout{display:flex;min-height:calc(100vh - 64px);position:relative;z-index:1}
+  nav{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;display:flex;flex-direction:column;gap:6px}
+  .nav-section{font-size:.65rem;font-weight:600;letter-spacing:1.5px;color:var(--text2);text-transform:uppercase;padding:.75rem .5rem .25rem}
+  nav button{width:100%;background:transparent;border:none;color:var(--text2);text-align:left;padding:.6rem .75rem;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:.875rem;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .15s}
+  nav button:hover{background:var(--surface2);color:var(--text)}
+  nav button.active{background:var(--glow);color:var(--accent3);border:1px solid rgba(124,92,191,.3)}
+  nav button .icon{font-size:1rem}
+  main{flex:1;padding:2rem;overflow-y:auto}
+
+  /* PAGE HEADER */
+  .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem}
+  .page-title{font-size:1.5rem;font-weight:700;letter-spacing:-.5px}
+  .page-title span{color:var(--accent3)}
+
+  /* STAT CARDS */
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.75rem}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+  .stat-label{font-size:.75rem;color:var(--text2);margin-bottom:.5rem}
+  .stat-value{font-size:1.75rem;font-weight:700;font-family:'JetBrains Mono',monospace}
+  .stat-value.purple{color:var(--accent3)} .stat-value.green{color:var(--success)}
+  .stat-value.orange{color:var(--warn)}
+
+  /* TABLE */
+  .table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .table-toolbar{padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;border-bottom:1px solid var(--border)}
+  .search-box{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.5rem 1rem;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:.875rem}
+  .search-box:focus{outline:none;border-color:var(--accent)}
+  .search-box::placeholder{color:var(--text2)}
+  .nav-btns{display:flex;gap:6px}
+  .btn{padding:.45rem .9rem;border-radius:7px;font-family:'Space Grotesk',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent3)}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+  .btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+  .btn-danger{background:rgba(224,92,122,.15);color:var(--danger);border:1px solid rgba(224,92,122,.3)}
+  .btn-danger:hover{background:rgba(224,92,122,.25)}
+  .btn-success{background:rgba(92,224,160,.15);color:var(--success);border:1px solid rgba(92,224,160,.3)}
+  .btn-success:hover{background:rgba(92,224,160,.25)}
+  .btn-warn{background:rgba(224,176,92,.15);color:var(--warn);border:1px solid rgba(224,176,92,.3)}
+  .btn-warn:hover{background:rgba(224,176,92,.25)}
+  table{width:100%;border-collapse:collapse}
+  thead{background:var(--surface2)}
+  th{padding:.75rem 1.25rem;text-align:left;font-size:.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border)}
+  td{padding:.875rem 1.25rem;font-size:.875rem;border-bottom:1px solid rgba(42,42,64,.5)}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(124,92,191,.05)}
+  .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:600}
+  .badge-purple{background:rgba(124,92,191,.2);color:var(--accent3)}
+  .badge-green{background:rgba(92,224,160,.15);color:var(--success)}
+  .badge-orange{background:rgba(224,176,92,.15);color:var(--warn)}
+  .pagination{padding:.75rem 1.25rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:var(--text2)}
+
+  /* MODAL */
+  .overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center}
+  .overlay.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:480px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.5)}
+  .modal-title{font-size:1.125rem;font-weight:700;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between}
+  .close-btn{background:none;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem;padding:4px 8px;border-radius:6px;transition:all .15s}
+  .close-btn:hover{color:var(--text);background:var(--surface2)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .form-full{grid-column:1/-1}
+  label{display:block;font-size:.75rem;color:var(--text2);margin-bottom:5px;font-weight:500}
+  input,select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem .75rem;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:.875rem}
+  input:focus,select:focus{outline:none;border-color:var(--accent)}
+  select option{background:var(--bg)}
+  .modal-footer{display:flex;gap:.75rem;margin-top:1.5rem;justify-content:flex-end}
+
+  /* FEE */
+  .fee-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1rem}
+  .fee-result{margin-top:1.5rem;background:var(--surface2);border:1px solid rgba(124,92,191,.3);border-radius:10px;padding:1.25rem}
+  .fee-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.875rem}
+  .fee-row:last-child{border-bottom:none;font-weight:700;font-size:1rem}
+  .fee-total{color:var(--accent3)}
+
+  /* TOAST */
+  .toast-container{position:fixed;top:80px;right:1.5rem;z-index:300;display:flex;flex-direction:column;gap:8px}
+  .toast{padding:.75rem 1.25rem;border-radius:8px;font-size:.875rem;animation:slideIn .3s ease;max-width:300px}
+  .toast-success{background:rgba(92,224,160,.15);border:1px solid rgba(92,224,160,.4);color:var(--success)}
+  .toast-error{background:rgba(224,92,122,.15);border:1px solid rgba(224,92,122,.4);color:var(--danger)}
+  @keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+  /* SPINNER */
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent3);border-radius:50%;animation:spin .6s linear infinite;margin-right:8px;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-row td{text-align:center;color:var(--text2);padding:2rem}
+
+  .page{display:none} .page.active{display:block}
+  .mono{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--accent3)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎓</div>
+    <div class="logo-text">Student <span>CourseReg</span> System</div>
+  </div>
+  <div class="header-info">
+    <div><strong>Student:</strong> SANCHARI DAS</div>
+    <div><strong>Reg No:</strong> 24BAI1038</div>
+    <div><strong>Course:</strong> BCSE302L – DBS</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav>
+    <div class="nav-section">Dashboard</div>
+    <button class="active" onclick="showPage('dashboard',this)"><span class="icon">⬛</span> Overview</button>
+    <div class="nav-section">Records</div>
+    <button onclick="showPage('students',this)"><span class="icon">👤</span> Students</button>
+    <button onclick="showPage('courses',this)"><span class="icon">📚</span> Course Catalog</button>
+    <button onclick="showPage('registrations',this)"><span class="icon">📋</span> Registrations</button>
+    <button onclick="showPage('fees',this)"><span class="icon">💰</span> Fee Records</button>
+    <div class="nav-section">Operations</div>
+    <button onclick="showPage('feecalc',this)"><span class="icon">🧮</span> Fee Calculator</button>
+    <button onclick="showPage('admin',this)"><span class="icon">🔑</span> Admin Panel</button>
+  </nav>
+
+  <main>
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header"><div class="page-title">System <span>Overview</span></div></div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-label">Total Students</div><div class="stat-value purple" id="statStudents">–</div></div>
+        <div class="stat-card"><div class="stat-label">Courses Available</div><div class="stat-value green" id="statCourses">–</div></div>
+        <div class="stat-card"><div class="stat-label">Active Registrations</div><div class="stat-value orange" id="statRegs">–</div></div>
+        <div class="stat-card"><div class="stat-label">Fee Collected (₹)</div><div class="stat-value purple" id="statFees">–</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-toolbar"><span style="font-weight:600;font-size:.9rem">Recent Registrations</span></div>
+        <table>
+          <thead><tr><th>Student ID</th><th>Student Name</th><th>Course</th><th>Semester</th><th>Status</th></tr></thead>
+          <tbody id="dashBody"><tr class="loading-row"><td colspan="5"><span class="spinner"></span>Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div id="page-students" class="page">
+      <div class="page-header">
+        <div class="page-title"><span>Students</span> Management</div>
+        <button class="btn btn-primary" onclick="openModal('studentModal')">+ Add Student</button>
+      </div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <input class="search-box" placeholder="🔍  Search by name, ID, department..." id="studentSearch" oninput="debounce(loadStudents,400)()">
+          <div class="nav-btns">
+            <button class="btn btn-ghost" onclick="navStudents('first')">⏮ First</button>
+            <button class="btn btn-ghost" onclick="navStudents('prev')">◀ Prev</button>
+            <button class="btn btn-ghost" onclick="navStudents('next')">Next ▶</button>
+            <button class="btn btn-ghost" onclick="navStudents('last')">Last ⏭</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Student ID</th><th>Name</th><th>Department</th><th>Semester</th><th>Actions</th></tr></thead>
+          <tbody id="studentBody"><tr class="loading-row"><td colspan="5"><span class="spinner"></span>Loading...</td></tr></tbody>
+        </table>
+        <div class="pagination"><span id="studentInfo">–</span></div>
+      </div>
+    </div>
+
+    <!-- COURSES -->
+    <div id="page-courses" class="page">
+      <div class="page-header">
+        <div class="page-title">Course <span>Catalog</span></div>
+        <button class="btn btn-primary" onclick="openModal('courseModal')">+ Add Course</button>
+      </div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <input class="search-box" placeholder="🔍  Search courses..." id="courseSearch" oninput="debounce(loadCourses,400)()">
+          <div class="nav-btns">
+            <button class="btn btn-ghost" onclick="navCourses('first')">⏮ First</button>
+            <button class="btn btn-ghost" onclick="navCourses('last')">Last ⏭</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Course ID</th><th>Course Name</th><th>Department</th><th>Credits</th><th>Professor</th><th>Fee/Credit</th><th>Actions</th></tr></thead>
+          <tbody id="courseBody"><tr class="loading-row"><td colspan="7"><span class="spinner"></span>Loading...</td></tr></tbody>
+        </table>
+        <div class="pagination"><span id="courseInfo">–</span></div>
+      </div>
+    </div>
+
+    <!-- REGISTRATIONS -->
+    <div id="page-registrations" class="page">
+      <div class="page-header">
+        <div class="page-title">Course <span>Registrations</span></div>
+        <button class="btn btn-primary" onclick="openRegModal()">+ Register Course</button>
+      </div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <input class="search-box" placeholder="🔍  Search registrations..." id="regSearch" oninput="debounce(loadRegs,400)()">
+        </div>
+        <table>
+          <thead><tr><th>Reg ID</th><th>Student</th><th>Course</th><th>Semester</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="regBody"><tr class="loading-row"><td colspan="6"><span class="spinner"></span>Loading...</td></tr></tbody>
+        </table>
+        <div class="pagination"><span id="regInfo">–</span></div>
+      </div>
+    </div>
+
+    <!-- FEES -->
+    <div id="page-fees" class="page">
+      <div class="page-header"><div class="page-title">Fee <span>Records</span></div></div>
+      <div class="table-card">
+        <div class="table-toolbar">
+          <input class="search-box" placeholder="🔍  Search fee records..." id="feeSearch" oninput="debounce(loadFees,400)()">
+        </div>
+        <table>
+          <thead><tr><th>Fee ID</th><th>Student</th><th>Course</th><th>Amount</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="feeBody"><tr class="loading-row"><td colspan="7"><span class="spinner"></span>Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FEE CALCULATOR -->
+    <div id="page-feecalc" class="page">
+      <div class="page-header"><div class="page-title">Fee <span>Calculator</span></div></div>
+      <div class="fee-card">
+        <div class="form-grid">
+          <div>
+            <label>Select Student</label>
+            <select id="calcStudent"></select>
+          </div>
+          <div>
+            <label>Semester</label>
+            <select id="calcSem">
+              <option value="1">Semester 1</option><option value="2">Semester 2</option>
+              <option value="3">Semester 3</option><option value="4">Semester 4</option>
+              <option value="5">Semester 5</option><option value="6">Semester 6</option>
+              <option value="7">Semester 7</option><option value="8">Semester 8</option>
+            </select>
+          </div>
+        </div>
+        <div id="feeResult" class="fee-result" style="display:none"></div>
+        <div style="margin-top:1rem;display:flex;gap:.75rem">
+          <button class="btn btn-primary" onclick="calcFee()">Calculate Fee</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="page-admin" class="page">
+      <div class="page-header">
+        <div class="page-title">Admin <span>Panel</span></div>
+        <button class="btn btn-primary" onclick="openModal('adminModal')">+ Add Admin</button>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th>Admin ID</th><th>Name</th><th>Email</th><th>Actions</th></tr></thead>
+          <tbody id="adminBody"><tr class="loading-row"><td colspan="4"><span class="spinner"></span>Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- STUDENT MODAL -->
+<div class="overlay" id="studentModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="studentModalTitle">Add Student</span>
+      <button class="close-btn" onclick="closeModal('studentModal')">✕</button>
+    </div>
+    <input type="hidden" id="editStudentId">
+    <div class="form-grid">
+      <div><label>Student ID</label><input id="sId" placeholder="e.g. 24BAI1045"></div>
+      <div><label>Full Name</label><input id="sName" placeholder="Full Name"></div>
+      <div><label>Department</label>
+        <select id="sDept"><option>CSE</option><option>IT</option><option>ECE</option><option>EEE</option><option>MECH</option><option>CIVIL</option></select>
+      </div>
+      <div><label>Semester</label>
+        <select id="sSem"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('studentModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStudent()">Save Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- COURSE MODAL -->
+<div class="overlay" id="courseModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="courseModalTitle">Add Course</span>
+      <button class="close-btn" onclick="closeModal('courseModal')">✕</button>
+    </div>
+    <input type="hidden" id="editCourseId">
+    <div class="form-grid">
+      <div><label>Course ID</label><input id="cId" placeholder="e.g. CS301"></div>
+      <div><label>Course Name</label><input id="cName" placeholder="Course Name"></div>
+      <div><label>Department</label>
+        <select id="cDept"><option>CSE</option><option>IT</option><option>ECE</option><option>EEE</option><option>MECH</option><option>CIVIL</option><option>MATHS</option></select>
+      </div>
+      <div><label>Credits</label>
+        <select id="cCredits"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+      </div>
+      <div class="form-full"><label>Professor</label><input id="cProf" placeholder="Professor Name"></div>
+      <div class="form-full"><label>Fee per Credit (₹)</label><input id="cFeePerCredit" type="number" placeholder="2500" value="2500"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('courseModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCourse()">Save Course</button>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTRATION MODAL -->
+<div class="overlay" id="regModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>Register Course</span>
+      <button class="close-btn" onclick="closeModal('regModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-full"><label>Student</label><select id="regStudent"></select></div>
+      <div class="form-full"><label>Course</label><select id="regCourse"></select></div>
+      <div><label>Semester</label>
+        <select id="regSem"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+      </div>
+      <div><label>Status</label>
+        <select id="regStatus"><option>Active</option><option>Pending</option><option>Completed</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('regModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveReg()">Register</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="overlay" id="adminModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>Add Admin</span>
+      <button class="close-btn" onclick="closeModal('adminModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div><label>Admin ID</label><input id="aId" placeholder="e.g. ADM003"></div>
+      <div><label>Admin Name</label><input id="aName" placeholder="Full Name"></div>
+      <div class="form-full"><label>Email</label><input id="aEmail" type="email" placeholder="admin@vit.ac.in"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('adminModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAdmin()">Save Admin</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────
+const API = 'http://localhost:5000/api';
+const PAGE_SIZE = 6;
+
+// ── STATE ───────────────────────────────────────────────────────
+let allStudents = [], allCourses = [];
+let studentPage = 0, coursePage = 0;
+
+// ── UTILS ───────────────────────────────────────────────────────
+async function apiFetch(path, opts = {}) {
+  try {
+    const res = await fetch(API + path, {
+      headers: { 'Content-Type': 'application/json' },
+      ...opts,
+    });
+    return await res.json();
+  } catch (e) {
+    return { success: false, message: 'Cannot connect to server. Is the backend running?' };
+  }
+}
+
+function toast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
+}
+
+function badge(text, cls) {
+  return `<span class="badge ${cls}">${text}</span>`;
+}
+
+function statusBadge(s) {
+  const map = { Active: 'badge-green', Pending: 'badge-orange', Completed: 'badge-purple', Paid: 'badge-green' };
+  return badge(s, map[s] || 'badge-purple');
+}
+
+function loading(tbodyId, cols) {
+  document.getElementById(tbodyId).innerHTML =
+    `<tr class="loading-row"><td colspan="${cols}"><span class="spinner"></span>Loading...</td></tr>`;
+}
+
+// ── NAV ─────────────────────────────────────────────────────────
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  loadPageData(name);
+}
+
+function loadPageData(name) {
+  if (name === 'dashboard')     loadDashboard();
+  if (name === 'students')      loadStudents();
+  if (name === 'courses')       loadCourses();
+  if (name === 'registrations') loadRegs();
+  if (name === 'fees')          loadFees();
+  if (name === 'feecalc')       loadFeeCalcSelects();
+  if (name === 'admin')         loadAdmin();
+}
+
+// ── DASHBOARD ───────────────────────────────────────────────────
+async function loadDashboard() {
+  const [s, c, r, f] = await Promise.all([
+    apiFetch('/students'),
+    apiFetch('/courses'),
+    apiFetch('/registrations'),
+    apiFetch('/fees'),
+  ]);
+  document.getElementById('statStudents').textContent = s.data?.length ?? '–';
+  document.getElementById('statCourses').textContent  = c.data?.length ?? '–';
+  document.getElementById('statRegs').textContent     = r.data?.filter(x => x.status === 'Active').length ?? '–';
+  const paid = (f.data || []).filter(x => x.status === 'Paid').reduce((s, x) => s + x.amount, 0);
+  document.getElementById('statFees').textContent = '₹' + paid.toLocaleString('en-IN');
+
+  document.getElementById('dashBody').innerHTML = (r.data || []).slice(0, 6).map(row => `
+    <tr>
+      <td class="mono">${row.student_id}</td>
+      <td>${row.student_name}</td>
+      <td>${row.course_name}</td>
+      <td>Sem ${row.semester}</td>
+      <td>${statusBadge(row.status)}</td>
+    </tr>`).join('') || '<tr class="loading-row"><td colspan="5">No data</td></tr>';
+}
+
+// ── STUDENTS ────────────────────────────────────────────────────
+async function loadStudents() {
+  loading('studentBody', 5);
+  const q = document.getElementById('studentSearch').value;
+  const res = await apiFetch('/students' + (q ? `?search=${encodeURIComponent(q)}` : ''));
+  if (!res.success) { toast(res.message, 'error'); return; }
+  allStudents = res.data;
+  studentPage = Math.min(studentPage, Math.max(0, Math.ceil(allStudents.length / PAGE_SIZE) - 1));
+  renderStudents();
+}
+
+function renderStudents() {
+  const total = allStudents.length;
+  const pages = Math.ceil(total / PAGE_SIZE);
+  const slice = allStudents.slice(studentPage * PAGE_SIZE, (studentPage + 1) * PAGE_SIZE);
+  document.getElementById('studentBody').innerHTML = slice.map(s => `
+    <tr>
+      <td class="mono">${s.student_id}</td>
+      <td>${s.name}</td>
+      <td>${badge(s.department, 'badge-purple')}</td>
+      <td>Sem ${s.semester}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-warn" onclick="editStudent('${s.student_id}')">Edit</button>
+        <button class="btn btn-danger" onclick="deleteStudent('${s.student_id}')">Delete</button>
+      </td>
+    </tr>`).join('') || '<tr class="loading-row"><td colspan="5">No students found</td></tr>';
+  document.getElementById('studentInfo').textContent =
+    `Showing ${slice.length} of ${total} students (Page ${studentPage + 1}/${Math.max(pages,1)})`;
+}
+
+function navStudents(dir) {
+  const pages = Math.ceil(allStudents.length / PAGE_SIZE);
+  if (dir === 'first') studentPage = 0;
+  else if (dir === 'last')  studentPage = pages - 1;
+  else if (dir === 'prev')  studentPage = Math.max(0, studentPage - 1);
+  else if (dir === 'next')  studentPage = Math.min(pages - 1, studentPage + 1);
+  renderStudents();
+}
+
+async function saveStudent() {
+  const id   = document.getElementById('sId').value.trim();
+  const name = document.getElementById('sName').value.trim();
+  const dept = document.getElementById('sDept').value;
+  const sem  = document.getElementById('sSem').value;
+  if (!id || !name) return toast('Fill all fields', 'error');
+
+  const editId = document.getElementById('editStudentId').value;
+  let res;
+  if (editId) {
+    res = await apiFetch(`/students/${editId}`, {
+      method: 'PUT', body: JSON.stringify({ name, department: dept, semester: sem })
+    });
+  } else {
+    res = await apiFetch('/students', {
+      method: 'POST', body: JSON.stringify({ student_id: id, name, department: dept, semester: sem })
+    });
+  }
+  if (res.success) {
+    toast(editId ? 'Student updated!' : 'Student added!');
+    closeModal('studentModal');
+    loadStudents();
+  } else {
+    toast(res.message, 'error');
+  }
+}
+
+function editStudent(id) {
+  const s = allStudents.find(x => x.student_id === id);
+  document.getElementById('studentModalTitle').textContent = 'Edit Student';
+  document.getElementById('editStudentId').value = id;
+  document.getElementById('sId').value   = s.student_id;
+  document.getElementById('sId').disabled = true;
+  document.getElementById('sName').value = s.name;
+  document.getElementById('sDept').value = s.department;
+  document.getElementById('sSem').value  = s.semester;
+  openModal('studentModal');
+}
+
+async function deleteStudent(id) {
+  if (!confirm(`Delete student ${id}?`)) return;
+  const res = await apiFetch(`/students/${id}`, { method: 'DELETE' });
+  if (res.success) { toast('Student deleted'); loadStudents(); }
+  else toast(res.message, 'error');
+}
+
+// ── COURSES ─────────────────────────────────────────────────────
+async function loadCourses() {
+  loading('courseBody', 7);
+  const q = document.getElementById('courseSearch').value;
+  const res = await apiFetch('/courses' + (q ? `?search=${encodeURIComponent(q)}` : ''));
+  if (!res.success) { toast(res.message, 'error'); return; }
+  allCourses = res.data;
+  coursePage = Math.min(coursePage, Math.max(0, Math.ceil(allCourses.length / PAGE_SIZE) - 1));
+  renderCourses();
+}
+
+function renderCourses() {
+  const total = allCourses.length;
+  const pages = Math.ceil(total / PAGE_SIZE);
+  const slice = allCourses.slice(coursePage * PAGE_SIZE, (coursePage + 1) * PAGE_SIZE);
+  document.getElementById('courseBody').innerHTML = slice.map(c => `
+    <tr>
+      <td class="mono">${c.course_id}</td>
+      <td>${c.course_name}</td>
+      <td>${badge(c.department, 'badge-purple')}</td>
+      <td>${badge(c.credits + ' cr', 'badge-green')}</td>
+      <td>${c.professor}</td>
+      <td class="mono">₹${c.fee_per_credit.toLocaleString('en-IN')}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-warn" onclick="editCourse('${c.course_id}')">Edit</button>
+        <button class="btn btn-danger" onclick="deleteCourse('${c.course_id}')">Delete</button>
+      </td>
+    </tr>`).join('') || '<tr class="loading-row"><td colspan="7">No courses found</td></tr>';
+  document.getElementById('courseInfo').textContent =
+    `Showing ${slice.length} of ${total} courses (Page ${coursePage + 1}/${Math.max(pages,1)})`;
+}
+
+function navCourses(dir) {
+  const pages = Math.ceil(allCourses.length / PAGE_SIZE);
+  if (dir === 'first') coursePage = 0;
+  else if (dir === 'last') coursePage = pages - 1;
+  renderCourses();
+}
+
+async function saveCourse() {
+  const id            = document.getElementById('cId').value.trim();
+  const course_name   = document.getElementById('cName').value.trim();
+  const department    = document.getElementById('cDept').value;
+  const credits       = document.getElementById('cCredits').value;
+  const professor     = document.getElementById('cProf').value.trim();
+  const fee_per_credit = parseInt(document.getElementById('cFeePerCredit').value) || 2500;
+  if (!course_name || !professor) return toast('Fill all fields', 'error');
+
+  const editId = document.getElementById('editCourseId').value;
+  let res;
+  if (editId) {
+    res = await apiFetch(`/courses/${editId}`, {
+      method: 'PUT', body: JSON.stringify({ course_name, department, credits, professor, fee_per_credit })
+    });
+  } else {
+    if (!id) return toast('Fill all fields', 'error');
+    res = await apiFetch('/courses', {
+      method: 'POST', body: JSON.stringify({ course_id: id, course_name, department, credits, professor, fee_per_credit })
+    });
+  }
+  if (res.success) {
+    toast(editId ? 'Course updated!' : 'Course added!');
+    closeModal('courseModal');
+    loadCourses();
+  } else {
+    toast(res.message, 'error');
+  }
+}
+
+function editCourse(id) {
+  const c = allCourses.find(x => x.course_id === id);
+  document.getElementById('courseModalTitle').textContent = 'Edit Course';
+  document.getElementById('editCourseId').value = id;
+  document.getElementById('cId').value           = c.course_id;
+  document.getElementById('cId').disabled        = true;
+  document.getElementById('cName').value         = c.course_name;
+  document.getElementById('cDept').value         = c.department;
+  document.getElementById('cCredits').value      = c.credits;
+  document.getElementById('cProf').value         = c.professor;
+  document.getElementById('cFeePerCredit').value = c.fee_per_credit;
+  openModal('courseModal');
+}
+
+async function deleteCourse(id) {
+  if (!confirm(`Delete course ${id}?`)) return;
+  const res = await apiFetch(`/courses/${id}`, { method: 'DELETE' });
+  if (res.success) { toast('Course deleted'); loadCourses(); }
+  else toast(res.message, 'error');
+}
+
+// ── REGISTRATIONS ───────────────────────────────────────────────
+async function loadRegs() {
+  loading('regBody', 6);
+  const q = document.getElementById('regSearch').value;
+  const res = await apiFetch('/registrations' + (q ? `?search=${encodeURIComponent(q)}` : ''));
+  if (!res.success) { toast(res.message, 'error'); return; }
+  document.getElementById('regBody').innerHTML = (res.data || []).map(r => `
+    <tr>
+      <td class="mono">${r.reg_id}</td>
+      <td>${r.student_name}</td>
+      <td>${r.course_name}</td>
+      <td>Sem ${r.semester}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td><button class="btn btn-danger" onclick="deleteReg('${r.reg_id}')">Remove</button></td>
+    </tr>`).join('') || '<tr class="loading-row"><td colspan="6">No registrations</td></tr>';
+  document.getElementById('regInfo').textContent = `${res.data?.length || 0} registrations`;
+}
+
+async function openRegModal() {
+  const [s, c] = await Promise.all([apiFetch('/students'), apiFetch('/courses')]);
+  document.getElementById('regStudent').innerHTML =
+    (s.data || []).map(x => `<option value="${x.student_id}">${x.student_id} – ${x.name}</option>`).join('');
+  document.getElementById('regCourse').innerHTML =
+    (c.data || []).map(x => `<option value="${x.course_id}">${x.course_id} – ${x.course_name}</option>`).join('');
+  openModal('regModal');
+}
+
+async function saveReg() {
+  const student_id = document.getElementById('regStudent').value;
+  const course_id  = document.getElementById('regCourse').value;
+  const semester   = document.getElementById('regSem').value;
+  const status     = document.getElementById('regStatus').value;
+  const res = await apiFetch('/registrations', {
+    method: 'POST', body: JSON.stringify({ student_id, course_id, semester, status })
+  });
+  if (res.success) {
+    toast('Registered! Fee record created automatically.');
+    closeModal('regModal');
+    loadRegs();
+  } else {
+    toast(res.message, 'error');
+  }
+}
+
+async function deleteReg(id) {
+  if (!confirm('Remove this registration?')) return;
+  const res = await apiFetch(`/registrations/${id}`, { method: 'DELETE' });
+  if (res.success) { toast('Registration removed'); loadRegs(); }
+  else toast(res.message, 'error');
+}
+
+// ── FEES ────────────────────────────────────────────────────────
+async function loadFees() {
+  loading('feeBody', 7);
+  const q = document.getElementById('feeSearch').value;
+  const res = await apiFetch('/fees' + (q ? `?search=${encodeURIComponent(q)}` : ''));
+  if (!res.success) { toast(res.message, 'error'); return; }
+  document.getElementById('feeBody').innerHTML = (res.data || []).map(f => `
+    <tr>
+      <td class="mono">${f.fee_id}</td>
+      <td>${f.student_name}</td>
+      <td>${f.course_name}</td>
+      <td class="mono">₹${f.amount.toLocaleString('en-IN')}</td>
+      <td>${f.date?.split('T')[0] || f.date}</td>
+      <td>${statusBadge(f.status)}</td>
+      <td style="display:flex;gap:6px">
+        ${f.status === 'Pending' ? `<button class="btn btn-success" onclick="markPaid('${f.fee_id}')">Mark Paid</button>` : ''}
+        <button class="btn btn-danger" onclick="deleteFee('${f.fee_id}')">Delete</button>
+      </td>
+    </tr>`).join('') || '<tr class="loading-row"><td colspan="7">No fee records</td></tr>';
+}
+
+async function markPaid(id) {
+  const res = await apiFetch(`/fees/${id}/pay`, { method: 'PATCH' });
+  if (res.success) { toast('Fee marked as Paid!'); loadFees(); }
+  else toast(res.message, 'error');
+}
+
+async function deleteFee(id) {
+  if (!confirm('Delete this fee record?')) return;
+  const res = await apiFetch(`/fees/${id}`, { method: 'DELETE' });
+  if (res.success) { toast('Fee record deleted'); loadFees(); }
+  else toast(res.message, 'error');
+}
+
+// ── FEE CALCULATOR ──────────────────────────────────────────────
+async function loadFeeCalcSelects() {
+  const res = await apiFetch('/students');
+  document.getElementById('calcStudent').innerHTML =
+    (res.data || []).map(s => `<option value="${s.student_id}">${s.student_id} – ${s.name}</option>`).join('');
+}
+
+async function calcFee() {
+  const studentId = document.getElementById('calcStudent').value;
+  const sem       = document.getElementById('calcSem').value;
+  if (!studentId) return toast('Select a student', 'error');
+
+  const res = await apiFetch(`/fees/calculate/${studentId}/${sem}`);
+  const el  = document.getElementById('feeResult');
+  if (!res.success) { toast(res.message, 'error'); return; }
+  if (!res.data.length) {
+    el.style.display = 'block';
+    el.innerHTML = `<div style="color:var(--text2);text-align:center;padding:1rem">No registrations found for Semester ${sem}</div>`;
+    return;
+  }
+  const rows = res.data.map(r =>
+    `<div class="fee-row">
+      <span>${r.course_name} (${r.course_id}) &nbsp;·&nbsp; ${r.credits} cr × ₹${r.fee_per_credit.toLocaleString('en-IN')}</span>
+      <span>₹${r.amount.toLocaleString('en-IN')}</span>
+    </div>`
+  ).join('');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="font-weight:600;margin-bottom:.75rem;color:var(--accent3)">
+      Fee Breakdown – Semester ${sem}
+    </div>
+    ${rows}
+    <div class="fee-row fee-total">
+      <span>Total Amount Due</span>
+      <span>₹${res.total.toLocaleString('en-IN')}</span>
+    </div>`;
+}
+
+// ── ADMIN ───────────────────────────────────────────────────────
+async function loadAdmin() {
+  const res = await apiFetch('/admin');
+  document.getElementById('adminBody').innerHTML = (res.data || []).map(a => `
+    <tr>
+      <td class="mono">${a.admin_id}</td>
+      <td>${a.admin_name}</td>
+      <td>${a.email}</td>
+      <td><button class="btn btn-danger" onclick="deleteAdmin('${a.admin_id}')">Remove</button></td>
+    </tr>`).join('') || '<tr class="loading-row"><td colspan="4">No admins</td></tr>';
+}
+
+async function saveAdmin() {
+  const admin_id   = document.getElementById('aId').value.trim();
+  const admin_name = document.getElementById('aName').value.trim();
+  const email      = document.getElementById('aEmail').value.trim();
+  if (!admin_id || !admin_name || !email) return toast('Fill all fields', 'error');
+  const res = await apiFetch('/admin', { method: 'POST', body: JSON.stringify({ admin_id, admin_name, email }) });
+  if (res.success) { toast('Admin added!'); closeModal('adminModal'); loadAdmin(); }
+  else toast(res.message, 'error');
+}
+
+async function deleteAdmin(id) {
+  if (!confirm(`Remove admin ${id}?`)) return;
+  const res = await apiFetch(`/admin/${id}`, { method: 'DELETE' });
+  if (res.success) { toast('Admin removed'); loadAdmin(); }
+  else toast(res.message, 'error');
+}
+
+// ── MODAL HELPERS ───────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'studentModal') {
+    document.getElementById('studentModalTitle').textContent = 'Add Student';
+    document.getElementById('editStudentId').value = '';
+    document.getElementById('sId').disabled = false;
+    ['sId','sName'].forEach(x => document.getElementById(x).value = '');
+  }
+  if (id === 'courseModal') {
+    document.getElementById('courseModalTitle').textContent = 'Add Course';
+    document.getElementById('editCourseId').value = '';
+    document.getElementById('cId').disabled = false;
+    ['cId','cName','cProf'].forEach(x => document.getElementById(x).value = '');
+    document.getElementById('cFeePerCredit').value = '2500';
+  }
+  if (id === 'adminModal') {
+    ['aId','aName','aEmail'].forEach(x => document.getElementById(x).value = '');
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Click outside to close
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ── INIT ────────────────────────────────────────────────────────
+loadDashboard();
+</script>
+</body>
+</html>
